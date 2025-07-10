@@ -1,5 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from app.openai_utils import stream_openai_response
+from app.openai_utils import stream_openai_response, generate_splunk_spl_query
 from app.session_manager import SessionManager
 import uuid
 
@@ -20,7 +20,7 @@ async def chat_websocket(websocket: WebSocket):
             print(f"[{session_id}] User: {user_message}")
             session_manager.add_message(session_id, "user", user_message)
 
-            for response_chunk in stream_openai_response(session_manager.get_session_messages(session_id)):
+            for response_chunk in generate_splunk_spl_query(session_manager.get_session_messages(session_id)):
                 await websocket.send_json({"response": response_chunk})
             session_manager.add_message(session_id, "assistant", response_chunk)
     except WebSocketDisconnect:
